@@ -19,6 +19,19 @@ public class Example {
 		// 1.2. 'odd' thread (calculates sum of odd elements of content array)
 		// 1.3. Master thread
 		// 2. Using countdown, calculate total sum of the content array
+		CountDown	cdStart = // 1
+		CountDown	cdEnd = // 2 items
+		
+		// thread: 
+		// cdStart.await();
+		// todo:  
+		// cdEnd.countDown()
+		// prepare array
+		// cdStart.countDown()
+		// todo:
+		// cdEnd.await()
+		
+		
 		
 	}
 
