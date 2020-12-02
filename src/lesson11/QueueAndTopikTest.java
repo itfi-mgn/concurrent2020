@@ -1,5 +1,6 @@
 package lesson11;
 
+import java.util.UUID;
 import java.util.concurrent.Semaphore;
 
 import com.hazelcast.client.HazelcastClient;
@@ -18,13 +19,13 @@ import com.hazelcast.topic.MessageListener;
 
 public class QueueAndTopikTest {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws InterruptedException {
 		// TODO Auto-generated method stub
 		HazelcastInstance hzInstance = Hazelcast.newHazelcastInstance();
         HazelcastInstance hz = HazelcastClient.newHazelcastClient();
 		try {
 			IQueue<String>	q = hz.getQueue("testqueue");
-			final Semaphore s = new Semaphore(0);
+			final Semaphore s = new Semaphore(0);	// Modeling queue with blocking options
 	        q.addItemListener(new ItemListener<String>() {
 				@Override
 				public void itemRemoved(ItemEvent<String> arg0) {
@@ -43,15 +44,24 @@ public class QueueAndTopikTest {
 	        q.take();
 	        
 	        
-	        ITopic<String> topic = hz.getTopic("testtopic");
-	        topic.addMessageListener(new MessageListener<String>() {
+	        ITopic<UUID> topic = hz.getTopic("testtopic");	// Modeling semaphore with local semaphore and topic
+			
+	        final Semaphore s1 = new Semaphore(0);
+			final UUID id = UUID.randomUUID();
+	        final UUID msgId = topic.addMessageListener(new MessageListener<UUID>() {
 				@Override
-				public void onMessage(Message<String> arg0) {	// q.take()
+				public void onMessage(Message<UUID> arg0) {	// q.take()
 					// TODO Auto-generated method stub
-					
+					if (arg0.getMessageObject().equals(id)) {
+						s1.release();
+					}
 				}
 			});
-	        topic.publish("sdsdsd");	// q.put()
+			// send id to dispatcher
+	        // in the dispatcher : topic.publish(id);	// q.put() 
+	        
+	        s1.acquire();
+			topic.removeMessageListener(msgId);
 		} finally {
 	        hz.shutdown();
 	        hzInstance.shutdown();
