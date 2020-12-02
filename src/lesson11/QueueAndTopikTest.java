@@ -1,5 +1,7 @@
 package lesson11;
 
+import java.util.concurrent.Semaphore;
+
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.collection.IQueue;
 import com.hazelcast.collection.ItemEvent;
@@ -22,6 +24,7 @@ public class QueueAndTopikTest {
         HazelcastInstance hz = HazelcastClient.newHazelcastClient();
 		try {
 			IQueue<String>	q = hz.getQueue("testqueue");
+			final Semaphore s = new Semaphore(0);
 	        q.addItemListener(new ItemListener<String>() {
 				@Override
 				public void itemRemoved(ItemEvent<String> arg0) {
@@ -32,9 +35,13 @@ public class QueueAndTopikTest {
 				@Override
 				public void itemAdded(ItemEvent<String> arg0) {
 					// TODO Auto-generated method stub
-					
+					s.release();
 				}
 			}, true);
+	        
+	        s.acquire();
+	        q.take();
+	        
 	        
 	        ITopic<String> topic = hz.getTopic("testtopic");
 	        topic.addMessageListener(new MessageListener<String>() {
